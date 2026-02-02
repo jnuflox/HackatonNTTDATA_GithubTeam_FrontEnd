@@ -1,3 +1,8 @@
+// Import API Client configuration
+const API_CONFIG = window.API_CONFIG || {
+    LOCAL_API_BASE: 'https://hackaton-nttdata-github-team-backen.vercel.app/api'
+};
+
 $(document).ready(function () {
     // ============================================
     // CONFIGURATION
@@ -5,12 +10,6 @@ $(document).ready(function () {
     
     // Set to true to use mock data, false to use real API
     const MOCKUP_MODE = false;
-    
-    // API endpoints (when not in mockup mode)
-    const API_ENDPOINTS = {
-        getProject: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects/:id',
-        getTasks: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects/:id/tasks'
-    };
 
     // ============================================
     // APPLICATION STATE
@@ -62,8 +61,9 @@ $(document).ready(function () {
                 projectData = await mockGetProjectById(appState.projectId);
             } else {
                 // Call real API
+                const projectUrl = `${API_CONFIG.LOCAL_API_BASE}/projects/${appState.projectId}`;
                 const response = await $.ajax({
-                    url: API_ENDPOINTS.getProject.replace(':id', appState.projectId),
+                    url: projectUrl,
                     method: 'GET',
                     dataType: 'json'
                 });
@@ -76,7 +76,12 @@ $(document).ready(function () {
             }
             
             appState.project = projectData;
-            appState.tasks = projectData.tasks || [];
+            
+            // Load tasks separately from API
+            await loadProjectTasks();
+            
+            // Load statistics
+            await loadTaskStatistics();
             
             renderProjectInfo();
             populateFilters();
@@ -95,8 +100,213 @@ $(document).ready(function () {
             console.error('Error loading project data:', error);
             showError('Error al cargar los datos del proyecto. Por favor, intente nuevamente.');
         } finally {
-            showLoading(false);
+            hideLoading();
         }
+    }
+
+    // ============================================
+    // TASK API FUNCTIONS
+    // ============================================
+    
+    /**
+     * Load tasks for the current project
+     */
+    async function loadProjectTasks() {
+        try {
+            const tasksUrl = `${API_CONFIG.LOCAL_API_BASE}/tasks/project/${appState.projectId}`;
+            const response = await $.ajax({
+                url: tasksUrl,
+                method: 'GET',
+                dataType: 'json'
+            });
+            
+            appState.tasks = response.data || response || [];
+            console.log(`Loaded ${appState.tasks.length} tasks for project ${appState.projectId}`);
+        } catch (error) {
+            console.error('Error loading tasks:', error);
+            // Fall back to embedded tasks if available
+            appState.tasks = appState.project?.tasks || [];
+        }
+    }
+
+    /**
+     * Load task statistics for the project
+     */
+    async function loadTaskStatistics() {
+        try {
+            const statsUrl = `${API_CONFIG.LOCAL_API_BASE}/tasks/project/${appState.projectId}/statistics`;
+            const response = await $.ajax({
+                url: statsUrl,
+                method: 'GET',
+                dataType: 'json'
+            });
+            
+            const stats = response.data || response;
+            console.log('Task statistics loaded:', stats);
+            
+            // Store statistics in app state
+            appState.taskStatistics = stats;
+        } catch (error) {
+            console.error('Error loading task statistics:', error);
+            appState.taskStatistics = null;
+        }
+    }
+
+    /**
+     * Create a new task
+     */
+    async function createTask(taskData) {
+        try {
+            const createUrl = `${API_CONFIG.LOCAL_API_BASE}/tasks/project/${appState.projectId}`;
+            const response = await $.ajax({
+                url: createUrl,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(taskData),
+                dataType: 'json'
+            });
+            
+            const newTask = response.data || response;
+            console.log('Task created successfully:', newTask);
+            
+            // Reload tasks
+            await loadProjectTasks();
+            applyFilters();
+            renderAIDashboard();
+            
+            showSuccess('✅ Tarea creada exitosamente');
+            return newTask;
+        } catch (error) {
+            console.error('Error creating task:', error);
+            showError('❌ Error al crear la tarea. Por favor, intente nuevamente.');
+            throw error;
+        }
+    }
+
+    /**
+     * Update an existing task
+     */
+    async function updateTask(taskCode, taskData) {
+        try {
+            const updateUrl = `${API_CONFIG.LOCAL_API_BASE}/tasks/${taskCode}`;
+            const response = await $.ajax({
+                url: updateUrl,
+                method: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(taskData),
+                dataType: 'json'
+            });
+            
+            const updatedTask = response.data || response;
+            console.log('Task updated successfully:', updatedTask);
+            
+            // Reload tasks
+            await loadProjectTasks();
+            applyFilters();
+            renderAIDashboard();
+            
+            showSuccess('✅ Tarea actualizada exitosamente');
+            return updatedTask;
+        } catch (error) {
+            console.error('Error updating task:', error);
+            showError('❌ Error al actualizar la tarea. Por favor, intente nuevamente.');
+            throw error;
+        }
+    }
+
+    /**
+     * Delete a task
+     */
+    async function deleteTask(taskCode) {
+        try {
+            const deleteUrl = `${API_CONFIG.LOCAL_API_BASE}/tasks/${taskCode}`;
+            await $.ajax({
+                url: deleteUrl,
+                method: 'DELETE',
+                dataType: 'json'
+            });
+            
+            console.log('Task deleted successfully:', taskCode);
+            
+            // Reload tasks
+            await loadProjectTasks();
+            applyFilters();
+            renderAIDashboard();
+            
+            showSuccess('✅ Tarea eliminada exitosamente');
+        } catch (error) {
+            console.error('Error deleting task:', error);
+            showError('❌ Error al eliminar la tarea. Por favor, intente nuevamente.');
+            throw error;
+        }
+    }
+
+    /**
+     * Get task risk analysis
+     */
+    async function getTaskRiskAnalysis(taskCode) {
+        try {
+            const riskUrl = `${API_CONFIG.LOCAL_API_BASE}/tasks/${taskCode}/risk-analysis`;
+            const response = await $.ajax({
+                url: riskUrl,
+                method: 'GET',
+                dataType: 'json'
+            });
+            
+            const riskAnalysis = response.data || response;
+            console.log('Risk analysis loaded:', riskAnalysis);
+            return riskAnalysis;
+        } catch (error) {
+            console.error('Error loading risk analysis:', error);
+            throw error;
+        }
+    }
+
+    // ============================================
+    // TASK MODAL FUNCTIONS
+    // ============================================
+    
+    function openTaskModal(mode, taskCode = null) {
+        const modal = $('#taskModal');
+        const modalTitle = $('#taskModalTitle');
+        const form = $('#taskForm');
+        
+        $('#taskModalMode').val(mode);
+        $('#taskModalCode').val(taskCode || '');
+        
+        if (mode === 'create') {
+            modalTitle.text('Nueva Tarea');
+            form[0].reset();
+            $('#taskCode').prop('readonly', false);
+        } else {
+            modalTitle.text('Editar Tarea');
+            const task = appState.tasks.find(t => t.taskCode === taskCode);
+            
+            if (!task) {
+                showError('❌ Tarea no encontrada');
+                return;
+            }
+            
+            // Populate form with task data
+            $('#taskCode').val(task.taskCode).prop('readonly', true);
+            $('#taskName').val(task.taskName);
+            $('#taskStage').val(task.stage);
+            $('#taskMilestone').val(task.milestone);
+            $('#taskStartDate').val(task.startDate);
+            $('#taskEndDate').val(task.endDate);
+            $('#taskStatus').val(task.status);
+            $('#taskResponsible').val(task.responsible);
+            $('#taskActualProgress').val(task.actualProgress || 0);
+            $('#taskPlannedProgress').val(task.plannedProgress || 0);
+        }
+        
+        modal.fadeIn(300);
+    }
+    
+    function closeTaskModal() {
+        const modal = $('#taskModal');
+        modal.fadeOut(300);
+        $('#taskForm')[0].reset();
     }
 
     // ============================================
@@ -753,6 +963,17 @@ $(document).ready(function () {
                     <td>
                         ${renderRiskSemaphore(task)}
                     </td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <button class="btn-action btn-edit btn-edit-task" data-task-code="${escapeHtml(task.taskCode)}" title="Editar tarea">
+                            ✏️ Editar
+                        </button>
+                        <button class="btn-action btn-delete btn-delete-task" data-task-code="${escapeHtml(task.taskCode)}" title="Eliminar tarea">
+                            🗑️ Eliminar
+                        </button>
+                        <button class="btn-action btn-risk btn-risk-analysis" data-task-code="${escapeHtml(task.taskCode)}" title="Análisis de riesgo IA">
+                            🤖 Riesgo
+                        </button>
+                    </td>
                 </tr>
             `;
             
@@ -923,16 +1144,41 @@ $(document).ready(function () {
     // UI HELPER FUNCTIONS
     // ============================================
     
-    function showLoading(show) {
+    function showLoading(message = 'Cargando...') {
         const loadingState = $('#loadingState');
         const sections = $('#projectInfoCard, #aiDashboard, #financialAnalysis, #taskFilters, #tasksSection');
         
-        if (show) {
-            loadingState.addClass('active');
-            sections.hide();
+        if (typeof message === 'boolean') {
+            // Legacy support: showLoading(true/false)
+            if (message) {
+                loadingState.addClass('active');
+                sections.hide();
+            } else {
+                loadingState.removeClass('active');
+            }
         } else {
-            loadingState.removeClass('active');
+            // New behavior: showLoading('Message...')
+            loadingState.addClass('active');
+            loadingState.find('.loading-message').text(message);
+            sections.hide();
         }
+    }
+    
+    function hideLoading() {
+        const loadingState = $('#loadingState');
+        loadingState.removeClass('active');
+    }
+    
+    function showSuccess(message) {
+        const alertHTML = `
+            <div class="detail-alert detail-alert-success">
+                ✓ ${message}
+            </div>
+        `;
+        $('#alertContainer').html(alertHTML);
+        setTimeout(() => {
+            $('#alertContainer').empty();
+        }, 3000);
     }
 
     function showError(message) {
@@ -942,6 +1188,9 @@ $(document).ready(function () {
             </div>
         `;
         $('#alertContainer').html(alertHTML);
+        setTimeout(() => {
+            $('#alertContainer').empty();
+        }, 5000);
     }
 
     // ============================================
@@ -1195,6 +1444,119 @@ $(document).ready(function () {
     $('.task-input, .task-select').on('keypress', function(e) {
         if (e.which === 13) {
             $('#btnApplyFilters').click();
+        }
+    });
+
+    // ============================================
+    // TASK CRUD EVENT HANDLERS
+    // ============================================
+    
+    // Create new task button
+    $('#btnCreateTask').on('click', function() {
+        openTaskModal('create');
+    });
+    
+    // Edit task buttons (delegated event)
+    $(document).on('click', '.btn-edit-task', function() {
+        const taskCode = $(this).data('task-code');
+        openTaskModal('edit', taskCode);
+    });
+    
+    // Delete task buttons (delegated event)
+    $(document).on('click', '.btn-delete-task', async function() {
+        const taskCode = $(this).data('task-code');
+        const task = appState.tasks.find(t => t.taskCode === taskCode);
+        
+        if (!task) {
+            showError('❌ Tarea no encontrada');
+            return;
+        }
+        
+        if (confirm(`¿Está seguro de eliminar la tarea "${task.taskName}"?`)) {
+            try {
+                showLoading('Eliminando tarea...');
+                await deleteTask(taskCode);
+                showSuccess('✅ Tarea eliminada exitosamente');
+            } catch (error) {
+                console.error('Error al eliminar tarea:', error);
+                showError('❌ Error al eliminar tarea');
+            } finally {
+                hideLoading();
+            }
+        }
+    });
+    
+    // Risk analysis buttons (delegated event)
+    $(document).on('click', '.btn-risk-analysis', async function() {
+        const taskCode = $(this).data('task-code');
+        try {
+            showLoading('Obteniendo análisis de riesgo...');
+            const riskData = await getTaskRiskAnalysis(taskCode);
+            hideLoading();
+            
+            // Show risk analysis in a dialog or modal
+            alert(`Análisis de Riesgo IA\n\n${JSON.stringify(riskData, null, 2)}`);
+        } catch (error) {
+            hideLoading();
+            console.error('Error al obtener análisis de riesgo:', error);
+            showError('❌ Error al obtener análisis de riesgo');
+        }
+    });
+    
+    // Task modal close button
+    $('#taskModalClose, #taskModalCancel').on('click', function() {
+        closeTaskModal();
+    });
+    
+    // Close modal when clicking outside
+    $('#taskModal').on('click', function(e) {
+        if ($(e.target).attr('id') === 'taskModal') {
+            closeTaskModal();
+        }
+    });
+    
+    // Task form submission
+    $('#taskForm').on('submit', async function(e) {
+        e.preventDefault();
+        
+        const mode = $('#taskModalMode').val();
+        const taskCode = $('#taskModalCode').val();
+        
+        // Collect form data
+        const taskData = {
+            taskCode: $('#taskCode').val().trim(),
+            taskName: $('#taskName').val().trim(),
+            stage: $('#taskStage').val(),
+            milestone: $('#taskMilestone').val().trim(),
+            startDate: $('#taskStartDate').val(),
+            endDate: $('#taskEndDate').val(),
+            status: $('#taskStatus').val(),
+            responsible: $('#taskResponsible').val().trim(),
+            actualProgress: parseFloat($('#taskActualProgress').val()) || 0,
+            plannedProgress: parseFloat($('#taskPlannedProgress').val()) || 0
+        };
+        
+        // Validate dates
+        if (new Date(taskData.startDate) > new Date(taskData.endDate)) {
+            showError('❌ La fecha de inicio no puede ser posterior a la fecha de fin');
+            return;
+        }
+        
+        try {
+            showLoading(mode === 'create' ? 'Creando tarea...' : 'Actualizando tarea...');
+            
+            if (mode === 'create') {
+                await createTask(taskData);
+            } else {
+                await updateTask(taskCode, taskData);
+            }
+            
+            closeTaskModal();
+            hideLoading();
+        } catch (error) {
+            hideLoading();
+            console.error('Error al guardar tarea:', error);
+            showError('❌ Error al guardar tarea');
         }
     });
 

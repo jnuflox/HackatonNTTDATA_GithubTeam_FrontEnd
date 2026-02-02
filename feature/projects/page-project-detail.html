@@ -618,6 +618,13 @@
             gap: 10px;
         }
 
+        .detail-alert-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
         .detail-alert-error {
             background: #fee2e2;
             color: #991b1b;
@@ -978,6 +985,182 @@
 
         .risk-icon {
             font-size: 16px;
+        }
+
+        /* TASK MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        /* ACTION BUTTONS */
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 4px;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-risk {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .btn-risk:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
         }
 
         /* AI VALIDATION MODAL */
@@ -1392,6 +1575,9 @@
         <div class="tasks-section" id="tasksSection" style="display: none;">
             <div class="tasks-header">
                 <h2 class="tasks-count" id="tasksCount">0 tareas encontradas</h2>
+                <button class="btn-primary" id="btnCreateTask">
+                    <i class="fas fa-plus"></i> Nueva Tarea
+                </button>
             </div>
 
             <!-- Tasks Table -->
@@ -1412,6 +1598,7 @@
                             <th>Responsable</th>
                             <th>Validación IA</th>
                             <th>Riesgo</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tasksTableBody">
@@ -1425,6 +1612,98 @@
                 <div class="empty-state-icon">📋</div>
                 <div class="empty-state-title">No se encontraron tareas</div>
                 <div class="empty-state-text">No hay tareas que coincidan con los filtros aplicados</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title" id="taskModalTitle">Nueva Tarea</h3>
+                <button class="modal-close" id="taskModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <input type="hidden" id="taskModalMode" value="create">
+                    <input type="hidden" id="taskModalCode" value="">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskCode">Código Tarea *</label>
+                            <input type="text" id="taskCode" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskName">Nombre Tarea *</label>
+                            <input type="text" id="taskName" required class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskStage">Etapa *</label>
+                            <select id="taskStage" required class="form-control">
+                                <option value="">Seleccionar...</option>
+                                <option value="Planificación">Planificación</option>
+                                <option value="Análisis">Análisis</option>
+                                <option value="Diseño">Diseño</option>
+                                <option value="Desarrollo">Desarrollo</option>
+                                <option value="Testing">Testing</option>
+                                <option value="Implementación">Implementación</option>
+                                <option value="Cierre">Cierre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskMilestone">Hito / Entregable *</label>
+                            <input type="text" id="taskMilestone" required class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskStartDate">Fecha Inicio *</label>
+                            <input type="date" id="taskStartDate" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskEndDate">Fecha Fin *</label>
+                            <input type="date" id="taskEndDate" required class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskStatus">Estado *</label>
+                            <select id="taskStatus" required class="form-control">
+                                <option value="">Seleccionar...</option>
+                                <option value="Por iniciar">Por iniciar</option>
+                                <option value="En progreso">En progreso</option>
+                                <option value="Completada">Completada</option>
+                                <option value="En riesgo">En riesgo</option>
+                                <option value="Bloqueada">Bloqueada</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskResponsible">Responsable *</label>
+                            <input type="text" id="taskResponsible" required class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskActualProgress">% Avance Real *</label>
+                            <input type="number" id="taskActualProgress" min="0" max="100" required class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPlannedProgress">% Avance Planificado *</label>
+                            <input type="number" id="taskPlannedProgress" min="0" max="100" required class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="taskModalCancel">Cancelar</button>
+                        <button type="submit" class="btn-primary" id="taskModalSave">Guardar</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
