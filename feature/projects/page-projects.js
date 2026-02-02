@@ -8,10 +8,10 @@ $(document).ready(function () {
     
     // API endpoints (when not in mockup mode)
     const API_ENDPOINTS = {
-        list: 'http://localhost:3000/api/projects',
-        create: 'http://localhost:3000/api/projects',
-        update: 'http://localhost:3000/api/projects',
-        delete: 'http://localhost:3000/api/projects'
+        list: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects',
+        create: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects',
+        update: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects',
+        delete: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects'
     };
 
     // ============================================

@@ -10,7 +10,7 @@ const API_CONFIG = {
   USE_DOCKER_API: false,
   
   // Base URLs
-  LOCAL_API_BASE: 'http://localhost:3000/api',
+  LOCAL_API_BASE: 'https://hackaton-nttdata-github-team-backen.vercel.app/api',
   DOCKER_API_BASE: '/api',  // Proxied through Nginx
   
   // Get active base URL

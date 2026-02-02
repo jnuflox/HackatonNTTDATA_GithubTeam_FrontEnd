@@ -4,7 +4,7 @@ $(document).ready(function () {
     // ============================================
     
     const MOCKUP_MODE = false;
-    const API_ENDPOINT = 'http://localhost:3000/api/projects/dashboard/stats';
+    const API_ENDPOINT = 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects/dashboard/stats';
 
     // ============================================
     // APPLICATION STATE
@@ -73,7 +73,7 @@ $(document).ready(function () {
                 dashboardData = result.success ? result.data : result;
                 
                 // Also load individual projects for detailed views
-                const projectsResponse = await fetch('http://localhost:3000/api/projects');
+                const projectsResponse = await fetch('https://hackaton-nttdata-github-team-backen.vercel.app/api/projects');
                 const projectsResult = await projectsResponse.json();
                 appState.allProjects = projectsResult.success ? projectsResult.data : projectsResult;
             }

@@ -8,8 +8,8 @@ $(document).ready(function () {
     
     // API endpoints (when not in mockup mode)
     const API_ENDPOINTS = {
-        getProject: 'http://localhost:3000/api/projects/:id',
-        getTasks: 'http://localhost:3000/api/projects/:id/tasks'
+        getProject: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects/:id',
+        getTasks: 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects/:id/tasks'
     };
 
     // ============================================

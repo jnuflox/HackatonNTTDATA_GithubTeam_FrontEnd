@@ -219,10 +219,10 @@
             </div>
 
             <div class="api-links">
-                <a href="http://localhost:3000/health" target="_blank" class="api-link">Health Check</a>
-                <a href="http://localhost:3000/api-docs" target="_blank" class="api-link">API Documentation (Swagger)</a>
-                <a href="http://localhost:3000/api/projects" target="_blank" class="api-link">Ver Proyectos API</a>
-                <a href="http://localhost:3000/api/projects/dashboard/stats" target="_blank" class="api-link">Dashboard Stats</a>
+                <a href="https://hackaton-nttdata-github-team-backen.vercel.app/health" target="_blank" class="api-link">Health Check</a>
+                <a href="https://hackaton-nttdata-github-team-backen.vercel.app/api-docs" target="_blank" class="api-link">API Documentation (Swagger)</a>
+                <a href="https://hackaton-nttdata-github-team-backen.vercel.app/api/projects" target="_blank" class="api-link">Ver Proyectos API</a>
+                <a href="https://hackaton-nttdata-github-team-backen.vercel.app/api/projects/dashboard/stats" target="_blank" class="api-link">Dashboard Stats</a>
             </div>
         </div>
     </div>
@@ -238,14 +238,14 @@
 
             try {
                 // Check health endpoint
-                const healthResponse = await fetch('http://localhost:3000/health');
+                const healthResponse = await fetch('https://hackaton-nttdata-github-team-backen.vercel.app/health');
                 
                 if (!healthResponse.ok) {
                     throw new Error('API no disponible');
                 }
 
                 // Get dashboard stats
-                const statsResponse = await fetch('http://localhost:3000/api/projects/dashboard/stats');
+                const statsResponse = await fetch('https://hackaton-nttdata-github-team-backen.vercel.app/api/projects/dashboard/stats');
                 const stats = await statsResponse.json();
 
                 if (stats.success) {

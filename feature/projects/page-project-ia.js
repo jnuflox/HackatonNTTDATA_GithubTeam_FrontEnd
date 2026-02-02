@@ -7,7 +7,7 @@ $(document).ready(function () {
     const MOCKUP_MODE = false;
     
     // API endpoint (when not in mockup mode)
-    const API_ENDPOINT = 'http://localhost:3000/api/projects';
+    const API_ENDPOINT = 'https://hackaton-nttdata-github-team-backen.vercel.app/api/projects';
 
     // ============================================
     // APPLICATION STATE
